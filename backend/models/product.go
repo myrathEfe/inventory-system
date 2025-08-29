@@ -11,3 +11,10 @@ type Product struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type UpdateProductInput struct {
+	Name     string  `json:"name"`
+	Category string  `json:"category"`
+	Stock    int     `json:"stock"`
+	Price    float64 `json:"price"`
+}

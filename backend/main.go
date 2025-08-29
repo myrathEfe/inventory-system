@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"github.com/gin-gonic/gin"
+	"inventory-system/config"
+)
+
+func init() {
+	config.ConnectDatabase()
+}
 
 func main() {
-	fmt.Println("Hello World!")
+	r := gin.Default()
+	r.Run()
 }
