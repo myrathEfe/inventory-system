@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"inventory-system/models"
 	"log"
 	"os"
 )
@@ -36,9 +37,18 @@ func ConnectDatabase() {
 	fmt.Println("🔎 DSN = ", dsn)
 
 	var err error
+	// GORM ile bağlan
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect database", err)
 	}
 	fmt.Println("✅ Database connected successfully!")
+
+	// migrate et
+	err = DB.AutoMigrate(&models.User{}, &models.Product{}, &models.Order{})
+	if err != nil {
+		log.Fatal("❌ Migration failed:", err)
+	}
+	fmt.Println("✅ Database migrated successfully!")
+
 }
