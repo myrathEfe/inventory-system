@@ -7,7 +7,7 @@ import (
 )
 
 func SetupProductRoutes(r *gin.Engine) {
-	r.POST("/product", controllers.GetProductByID)
+	r.GET("/product/:id", controllers.GetProductByID)
 	r.GET("/products", controllers.GetProducts)
 	r.POST("/product", middleware.RequireAuth, controllers.CreateProduct) // auth gerekli
 	r.PUT("/product/:id", middleware.RequireAuth, controllers.UpdateProduct)

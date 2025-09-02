@@ -6,7 +6,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"inventory-system/config"
 	"inventory-system/models"
-	"os"
 	"time"
 )
 
@@ -76,7 +75,7 @@ func Login(c *gin.Context) {
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString(config.JwtSecret)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to generate token"})
 		return

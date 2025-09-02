@@ -7,16 +7,16 @@ import (
 	"log"
 )
 
-func init() {
-	config.ConnectDatabase()
-}
-
 func main() {
+	config.InitConfig()
+	config.ConnectDatabase()
+
 	r := gin.Default()
 	routes.SetupAuthRoutes(r)
 	routes.SetupProductRoutes(r)
 	routes.SetupOrderRoutes(r)
-	err := r.Run(":8080")
+
+	err := r.Run(":8081")
 	if err != nil {
 		log.Fatal(err)
 	}

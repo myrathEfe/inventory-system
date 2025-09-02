@@ -11,15 +11,17 @@ import (
 
 var DB *gorm.DB
 
-var JwtSecret = []byte(os.Getenv("JWT_SECRET"))
+var JwtSecret []byte
 
-func ConnectDatabase() {
+func InitConfig() {
 	err := godotenv.Load()
-
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	//.env dosyasından değişkenleri al
+	JwtSecret = []byte(os.Getenv("JWT_SECRET"))
+}
+
+func ConnectDatabase() {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -30,10 +32,13 @@ func ConnectDatabase() {
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Istanbul",
 		host, user, password, dbname, port,
 	)
-	//Gorm bağlantısı
+	fmt.Println("ENV DB_HOST =", os.Getenv("DB_HOST"))
+	fmt.Println("🔎 DSN = ", dsn)
+
+	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect database", err)
 	}
-	fmt.Println("Database connected successfully!")
+	fmt.Println("✅ Database connected successfully!")
 }
