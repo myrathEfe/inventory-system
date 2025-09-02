@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
-
 func Register(c *gin.Context) {
 	var input models.RegisterInput
 

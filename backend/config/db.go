@@ -11,6 +11,8 @@ import (
 
 var DB *gorm.DB
 
+var JwtSecret = []byte(os.Getenv("JWT_SECRET"))
+
 func ConnectDatabase() {
 	err := godotenv.Load()
 
