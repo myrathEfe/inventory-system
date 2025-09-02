@@ -11,3 +11,7 @@ type Order struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Products  []Product `gorm:"many2many:order_products;" json:"products"`
 }
+
+type UpdateOrderInput struct {
+	Status string `json:"status"` // pending | preparing | completed | cancelled
+}
