@@ -17,6 +17,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("formData: ",formData)
     setLoading(true);
     const ok = await login(formData.email, formData.password);
     setLoading(false);

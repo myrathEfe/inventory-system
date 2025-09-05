@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
 
   // Sayfa açılınca localStorage'dan oku
   useEffect(() => {
+    console.log("Auth provider useffect calis",user,token)
     const t = localStorage.getItem("token");
     const u = localStorage.getItem("user");
     if (t) setToken(t);
@@ -26,11 +27,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+
       const response = await authAPI.login({ email, password });
       console.log("🔎 Login Response:", response);
 
       // Axios response -> response.data içinde token + user var
-      const { token: newToken, user: userData } = response.data;
+      const { token: newToken, user: userData } = response;
 
       if (!newToken || !userData) {
         throw new Error("Sunucudan veri alınamadı");

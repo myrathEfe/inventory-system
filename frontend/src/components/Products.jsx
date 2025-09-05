@@ -5,7 +5,7 @@ import { Plus, Edit, Trash2, Package, DollarSign, Box } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Products = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]); // ✅ güvenli başlangıç
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -19,10 +19,11 @@ const Products = () => {
     try {
       setLoading(true);
       const response = await productsAPI.getAll();
-      setProducts(response.data);
+      setProducts(response?.data || []); // ✅ fallback boş array
     } catch (error) {
       toast.error('Ürünler yüklenirken hata oluştu');
       console.error('Error fetching products:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -92,89 +93,92 @@ const Products = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
-      </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Ürün Yönetimi</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <Plus className="h-5 w-5" />
-          <span>Yeni Ürün</span>
-        </button>
-      </div>
-
-      {products.length === 0 ? (
-        <div className="text-center py-12">
-          <Package className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Henüz ürün yok</h3>
-          <p className="mt-1 text-sm text-gray-500">İlk ürününüzü ekleyerek başlayın.</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Ürün Yönetimi</h1>
+          <button
+              onClick={() => setShowForm(true)}
+              className="btn-primary flex items-center space-x-2"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Yeni Ürün</span>
+          </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product.id} className="card hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {product.name}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {product.description}
-                  </p>
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-1 text-green-600">
-                    <DollarSign className="h-4 w-4" />
-                    <span className="font-medium">{product.price} ₺</span>
-                  </div>
-                  <div className="flex items-center space-x-1 text-blue-600">
-                    <Box className="h-4 w-4" />
-                    <span className="font-medium">{product.stock}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleEdit(product)}
-                  className="flex-1 btn-secondary flex items-center justify-center space-x-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  <span>Düzenle</span>
-                </button>
-                <button
-                  onClick={() => handleDeleteProduct(product.id)}
-                  className="flex-1 btn-danger flex items-center justify-center space-x-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>Sil</span>
-                </button>
-              </div>
+        {!Array.isArray(products) || products.length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Henüz ürün yok</h3>
+              <p className="mt-1 text-sm text-gray-500">İlk ürününüzü ekleyerek başlayın.</p>
             </div>
-          ))}
-        </div>
-      )}
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                  <div key={product.id} className="card hover:shadow-lg transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {product.name}
+                        </h3>
+                        {/* description yoksa hata vermesin */}
+                        {product.description && (
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                              {product.description}
+                            </p>
+                        )}
+                      </div>
+                    </div>
 
-      {showForm && (
-        <ProductForm
-          product={editingProduct}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          loading={formLoading}
-        />
-      )}
-    </div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <DollarSign className="h-4 w-4" />
+                          <span className="font-medium">{product.price} ₺</span>
+                        </div>
+                        <div className="flex items-center space-x-1 text-blue-600">
+                          <Box className="h-4 w-4" />
+                          <span className="font-medium">{product.stock}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <button
+                          onClick={() => handleEdit(product)}
+                          className="flex-1 btn-secondary flex items-center justify-center space-x-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span>Düzenle</span>
+                      </button>
+                      <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="flex-1 btn-danger flex items-center justify-center space-x-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>Sil</span>
+                      </button>
+                    </div>
+                  </div>
+              ))}
+            </div>
+        )}
+
+        {showForm && (
+            <ProductForm
+                product={editingProduct}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                loading={formLoading}
+            />
+        )}
+      </div>
   );
 };
 

@@ -22,21 +22,29 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+
+      // API çağrılarını paralel yapıyoruz
       const [productsResponse, ordersResponse] = await Promise.all([
         productsAPI.getAll(),
         ordersAPI.getAll()
       ]);
 
-      const products = productsResponse.data;
-      const orders = ordersResponse.data;
+      const products = productsResponse.data || [];
+      const orders = ordersResponse.data || [];
 
-      // Toplam geliri ürünlerin fiyatları üzerinden hesapla
+      // Toplam geliri güvenli hesapla
       const totalRevenue = orders.reduce((sum, order) => {
-        return sum + order.products.reduce((pSum, product) => pSum + (product.price || 0), 0);
+        const orderProducts = Array.isArray(order.products) ? order.products : [];
+        return sum + orderProducts.reduce(
+            (pSum, product) => pSum + (product?.price || 0),
+            0
+        );
       }, 0);
 
-      const pendingOrders = orders.filter(order => order.status === 'pending').length;
+      // Bekleyen sipariş sayısı
+      const pendingOrders = orders.filter(order => order.status === "pending").length;
 
+      // İstatistikleri güncelle
       setStats({
         totalProducts: products.length,
         totalOrders: orders.length,
@@ -44,16 +52,18 @@ const Dashboard = () => {
         pendingOrders,
       });
 
+      // Son eklenen ürünler / siparişler
       setRecentProducts(products.slice(-5).reverse());
       setRecentOrders(orders.slice(-5).reverse());
 
     } catch (error) {
-      toast.error('Dashboard verileri yüklenirken hata oluştu');
-      console.error('Error fetching dashboard data:', error);
+      toast.error("Dashboard verileri yüklenirken hata oluştu");
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const getStatusColor = (status) => {
     switch (status) {
