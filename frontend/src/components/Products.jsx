@@ -5,13 +5,14 @@ import { Plus, Edit, Trash2, Package, DollarSign, Box } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Products = () => {
-  const [products, setProducts] = useState([]); // ✅ güvenli başlangıç
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
+    console.log("Products component mount oldu ✅");
     fetchProducts();
   }, []);
 
@@ -19,7 +20,8 @@ const Products = () => {
     try {
       setLoading(true);
       const response = await productsAPI.getAll();
-      setProducts(response?.data || []); // ✅ fallback boş array
+      console.log("API'den gelen ürünler:", response.data);
+      setProducts(response?.data || []);
     } catch (error) {
       toast.error('Ürünler yüklenirken hata oluştu');
       console.error('Error fetching products:', error);
