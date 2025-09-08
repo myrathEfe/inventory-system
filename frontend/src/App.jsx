@@ -90,7 +90,7 @@ const AppLayout = () => {
             path="/products"
             element={
               <ProtectedRoute>
-                <Products />
+                  <Products></Products>
               </ProtectedRoute>
             }
           />

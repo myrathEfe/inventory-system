@@ -10,6 +10,8 @@ const ProductForm = ({ product, onSubmit, onCancel, loading }) => {
   });
 
   useEffect(() => {
+    console.log("🔥 Products.jsx dosyası yüklendi");
+
     if (product) {
       setFormData({
         name: product.name || '',

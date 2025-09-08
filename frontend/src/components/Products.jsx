@@ -4,6 +4,8 @@ import ProductForm from './ProductForm';
 import { Plus, Edit, Trash2, Package, DollarSign, Box } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+
+
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,19 +14,32 @@ const Products = () => {
   const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
-    console.log("Products component mount oldu ✅");
-    fetchProducts();
+    console.log("🔥 Products.jsx dosyası yüklendi");
+
+    const loadProducts = async () => {
+      console.log("✅ Products comsponent mount oldu");
+      await fetchProducts();
+    };
+    loadProducts();
   }, []);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const response = await productsAPI.getAll();
-      console.log("API'den gelen ürünler:", response.data);
-      setProducts(response?.data || []);
+
+      console.log("🔎 API response raw:", response);
+      // Eğer interceptor varsa response zaten array olacak
+      console.log("📦 API data:", response);
+
+      // Eğer response zaten array ise direkt setle
+      setProducts(Array.isArray(response) ? response : response.data || []);
+
+      toast.success('Ürünler yüklendi');
+      toast.success(typeof response); // response.data değil, response
     } catch (error) {
+      console.error("❌ Error fetching products:", error);
       toast.error('Ürünler yüklenirken hata oluştu');
-      console.error('Error fetching products:', error);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -37,10 +52,10 @@ const Products = () => {
       await productsAPI.create(productData);
       toast.success('Ürün başarıyla eklendi');
       setShowForm(false);
-      fetchProducts();
+      await fetchProducts();
     } catch (error) {
+      console.error("❌ Error creating product:", error);
       toast.error('Ürün eklenirken hata oluştu');
-      console.error('Error creating product:', error);
     } finally {
       setFormLoading(false);
     }
@@ -53,10 +68,10 @@ const Products = () => {
       toast.success('Ürün başarıyla güncellendi');
       setShowForm(false);
       setEditingProduct(null);
-      fetchProducts();
+      await fetchProducts();
     } catch (error) {
+      console.error("❌ Error updating product:", error);
       toast.error('Ürün güncellenirken hata oluştu');
-      console.error('Error updating product:', error);
     } finally {
       setFormLoading(false);
     }
@@ -67,10 +82,10 @@ const Products = () => {
       try {
         await productsAPI.delete(productId);
         toast.success('Ürün başarıyla silindi');
-        fetchProducts();
+        await fetchProducts();
       } catch (error) {
+        console.error("❌ Error deleting product:", error);
         toast.error('Ürün silinirken hata oluştu');
-        console.error('Error deleting product:', error);
       }
     }
   };
@@ -129,7 +144,6 @@ const Products = () => {
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           {product.name}
                         </h3>
-                        {/* description yoksa hata vermesin */}
                         {product.description && (
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                               {product.description}

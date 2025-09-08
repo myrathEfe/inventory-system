@@ -5,30 +5,40 @@ import { Plus, Edit, Trash2, ShoppingCart, User, Calendar, DollarSign } from 'lu
 import toast from 'react-hot-toast';
 
 const Orders = () => {
-  const [orders, setOrders] = useState([]);      // ✅ güvenli başlangıç
-  const [products, setProducts] = useState([]);  // ✅ güvenli başlangıç
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    const loadData = async () => {
+      console.log("✅ Orders component mount oldu");
+      await fetchData();
+    };
+    loadData();
   }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+
       const [ordersResponse, productsResponse] = await Promise.all([
         ordersAPI.getAll(),
-        productsAPI.getAll()
+        productsAPI.getAll(),
       ]);
 
-      setOrders(ordersResponse?.data || []);     // ✅ fallback boş array
-      setProducts(productsResponse?.data || []); // ✅ fallback boş array
+      console.log("🔎 Orders API raw:", ordersResponse);
+      console.log("📦 Products API raw:", productsResponse);
+
+      // interceptor varsa direkt response kullan
+      setOrders(Array.isArray(ordersResponse) ? ordersResponse : ordersResponse.data || []);
+      setProducts(Array.isArray(productsResponse) ? productsResponse : productsResponse.data || []);
+
     } catch (error) {
+      console.error("❌ Error fetching data:", error);
       toast.error('Veriler yüklenirken hata oluştu');
-      console.error('Error fetching data:', error);
       setOrders([]);
       setProducts([]);
     } finally {
@@ -42,10 +52,10 @@ const Orders = () => {
       await ordersAPI.create(orderData);
       toast.success('Sipariş başarıyla oluşturuldu');
       setShowForm(false);
-      fetchData();
+      await fetchData();
     } catch (error) {
+      console.error("❌ Error creating order:", error);
       toast.error('Sipariş oluşturulurken hata oluştu');
-      console.error('Error creating order:', error);
     } finally {
       setFormLoading(false);
     }
@@ -58,10 +68,10 @@ const Orders = () => {
       toast.success('Sipariş başarıyla güncellendi');
       setShowForm(false);
       setEditingOrder(null);
-      fetchData();
+      await fetchData();
     } catch (error) {
+      console.error("❌ Error updating order:", error);
       toast.error('Sipariş güncellenirken hata oluştu');
-      console.error('Error updating order:', error);
     } finally {
       setFormLoading(false);
     }
@@ -72,10 +82,10 @@ const Orders = () => {
       try {
         await ordersAPI.delete(orderId);
         toast.success('Sipariş başarıyla silindi');
-        fetchData();
+        await fetchData();
       } catch (error) {
+        console.error("❌ Error deleting order:", error);
         toast.error('Sipariş silinirken hata oluştu');
-        console.error('Error deleting order:', error);
       }
     }
   };
@@ -84,10 +94,10 @@ const Orders = () => {
     try {
       await ordersAPI.update(orderId, { status: newStatus });
       toast.success('Sipariş durumu güncellendi');
-      fetchData();
+      await fetchData();
     } catch (error) {
+      console.error("❌ Error updating status:", error);
       toast.error('Durum güncellenirken hata oluştu');
-      console.error('Error updating status:', error);
     }
   };
 
@@ -150,7 +160,7 @@ const Orders = () => {
           </button>
         </div>
 
-        {!Array.isArray(orders) || orders.length === 0 ? (
+        {orders.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">Henüz sipariş yok</h3>
@@ -164,54 +174,39 @@ const Orders = () => {
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              Sipariş #{order.id}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {order.products?.length > 0
-                                  ? order.products.map(p => p.name || `Ürün #${p.id}`).join(', ')
-                                  : "Ürün yok"}
-                            </p>
+                            <h3 className="text-lg font-semibold text-gray-900">Sipariş #{order.id}</h3>
+                            <p className="text-sm text-gray-600">{order.user?.name || 'Bilinmiyor'}</p>
                           </div>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                       {getStatusText(order.status)}
                     </span>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div className="flex items-center space-x-2 text-gray-600">
                             <User className="h-4 w-4" />
-                            <span>{order.user?.name || "Bilinmeyen Kullanıcı"}</span>
+                            <span>{order.user?.name || 'Bilinmeyen Kullanıcı'}</span>
                           </div>
                           <div className="flex items-center space-x-2 text-gray-600">
                             <Calendar className="h-4 w-4" />
-                            <span>{order.created_at
-                                ? new Date(order.created_at).toLocaleDateString('tr-TR')
-                                : "-"}</span>
+                            <span>{new Date(order.created_at).toLocaleDateString('tr-TR')}</span>
                           </div>
                           <div className="flex items-center space-x-2 text-gray-600">
                             <DollarSign className="h-4 w-4" />
-                            <span>
-                        Toplam: {order.products
-                                ? order.products.reduce((sum, p) => sum + (p.price || 0), 0)
-                                : 0} ₺
-                      </span>
+                            <span>{order.products?.length || 0} ürün</span>
                           </div>
                         </div>
                       </div>
-
                       <div className="flex flex-col space-y-2 lg:flex-row lg:space-y-0 lg:space-x-2">
                         <select
                             value={order.status}
                             onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
                         >
                           <option value="pending">Beklemede</option>
                           <option value="preparing">Hazırlanıyor</option>
                           <option value="completed">Tamamlandı</option>
                           <option value="cancelled">İptal Edildi</option>
                         </select>
-
                         <button
                             onClick={() => handleEdit(order)}
                             className="btn-secondary flex items-center justify-center space-x-2"
@@ -219,7 +214,6 @@ const Orders = () => {
                           <Edit className="h-4 w-4" />
                           <span>Düzenle</span>
                         </button>
-
                         <button
                             onClick={() => handleDeleteOrder(order.id)}
                             className="btn-danger flex items-center justify-center space-x-2"
